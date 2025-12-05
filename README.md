@@ -1,40 +1,166 @@
 # srcVul v2 – Slicing-Based Vulnerable Code Clone Detection (Prototype)
 
-This repository contains a lightweight, **re-implemented prototype** of the `srcVul` tool for detecting vulnerable code clones and recommending patches using **program slicing vectors**.
+srcVul v2 is a lightweight, re-implemented prototype of the original srcVul vulnerability detection tool.  
+It demonstrates how program slicing vectors can be used to identify vulnerable code clones and recommend patches.
 
-It is based on the methodology described in:
+This prototype is intended for:
 
-> *A Slicing-Based Approach for Detecting and Patching Vulnerable Code Clones*  
-> H. Alomari et al., 2025.  
+- ICPC tool demonstrations
+- Reproducible research
+- Teaching program analysis concepts
 
-The goal of this repository is to provide a **clean, reproducible, ICPC-style tool demo** that showcases the core ideas:
+It implements core ideas from:
 
-- Build a **vulnerability database** from slice profiles of known vulnerable code (e.g., CVE-2019-15214).
-- Compute **slicing vectors** (vsvectors) for target code slices.
-- Use **cosine similarity** to detect vulnerable clones.
-- Attach a **patch description** to each vulnerability and show it for detected clones.
+H. Alomari et al., 2025  
+"A Slicing-Based Approach for Detecting and Patching Vulnerable Code Clones."
 
-This is **not** the original research artifact from the paper, but a simplified, scriptable version designed for teaching, replication, and tool demonstrations.
+This is not the full research artifact. It is a simplified and clean version focused on clarity and reproducibility.
 
 ---
 
 ## Repository Structure
 
-```text
+```
 srcvul/
-  __init__.py        # package init
-  slices.py          # SliceProfile model + text parser
-  vectors.py         # vsvector (VSVect) computation
-  similarity.py      # cosine similarity + brute-force match search
-  db.py              # JSON-based vulnerability DB (VulDBEntry)
-  cli.py             # command-line interface (build-db, scan, demo-motivating)
+  __init__.py
+  cli.py
+  slices.py
+  vectors.py
+  similarity.py
+  db.py
 
 demo_data/
-  vuln_parent_slices.txt         # vulnerability slice profiles (e.g., CVE-2019-15214)
-  target_parent_slices.txt       # target slice profile for the motivating example
-  libvirt-1.1.0.slice.xml        # original libvirt slices file (srcVul data format)
-  libvirt_slices.txt             # same as above, but with `pointers` renamed to `ptrs`
+  vuln_parent_slices.txt
+  target_parent_slices.txt
+  libvirt-1.1.0.slice.xml
+  libvirt_slices.txt
 
-requirements.txt                 # Python dependencies (minimal)
+requirements.txt
+LICENSE
 README.md
+```
 
+---
+
+## Installation
+
+Python 3.10 or later is required.
+
+### macOS / Linux
+
+```
+git clone https://github.com/alomarhw/srcvul_v2.git
+cd srcvul_v2
+
+python3 -m venv .venv
+source .venv/bin/activate
+
+pip install -r requirements.txt
+```
+
+### Windows (PowerShell)
+
+```
+git clone https://github.com/alomarhw/srcvul_v2.git
+cd srcvul_v2
+
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
+```
+
+---
+
+## One-Command Demo (Motivating Example)
+
+To run the motivating example for CVE-2019-15214:
+
+```
+python -m srcvul.cli demo-motivating
+```
+
+This command:
+
+1. Builds a vulnerability database from `demo_data/vuln_parent_slices.txt`
+2. Scans `demo_data/target_parent_slices.txt`
+3. Reports detected vulnerable clones and prints the associated patch text
+
+Example output:
+
+```
+[build-db] Saved N entries to demo_data/vuln_db_cve_2019_15214_demo.json
+[scan] Found 1 matches with threshold 0.80
+----
+target: Linux-4.14.76/.../snd_info_create_entry:parent
+db:     vuln_id=CVE-2019-15214
+sim:    1.0000
+patch:  Fix: hold the parent instance until all operations complete...
+```
+
+---
+
+## Manual Usage
+
+### 1. Build a vulnerability database
+
+```
+python -m srcvul.cli build-db \
+  --slices demo_data/vuln_parent_slices.txt \
+  --module-size 24 \
+  --vuln-id CVE-2019-15214 \
+  --patch-text "Fix: hold the parent instance until all operations complete; prevent stale pointer dereference." \
+  --out demo_data/vuln_db_cve_2019_15214.json
+```
+
+### 2. Scan a target file
+
+```
+python -m srcvul.cli scan \
+  --slices demo_data/target_parent_slices.txt \
+  --module-size 22 \
+  --db demo_data/vuln_db_cve_2019_15214.json \
+  --threshold 0.8
+```
+
+### 3. Scan a larger dataset (libvirt example)
+
+```
+python -m srcvul.cli scan \
+  --slices demo_data/libvirt_slices.txt \
+  --module-size 10000 \
+  --db demo_data/vuln_db_cve_2019_15214.json \
+  --threshold 0.8
+```
+
+---
+
+## How the Tool Works
+
+1. Slice profiles are parsed to extract:
+   - variable name
+   - def and use lines
+   - dependent variables
+   - pointer relationships
+   - called functions
+
+2. Slicing vectors (SC, SCvg, SI, SS) are computed for each slice.
+
+3. Cosine similarity is used to compare vectors and identify clone-like patterns.
+
+4. Patch recommendations are displayed when a match is found.
+
+---
+
+## License
+
+This project is released under the MIT License.  
+See the LICENSE file for details.
+
+---
+
+## Citation
+
+If you use this tool in academic work, please cite:
+
+H. Alomari et al., 2025  
+"A Slicing-Based Approach for Detecting and Patching Vulnerable Code Clones."
