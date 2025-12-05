@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.sqlite3
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# IDE/project files
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# Data / generated files (you can adjust)
+demo_data/*.json
+
