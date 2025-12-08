@@ -3,13 +3,7 @@
 srcVul v2 is a lightweight, re-implemented prototype of the original srcVul vulnerability detection tool.  
 It demonstrates how program slicing vectors can be used to identify vulnerable code clones and recommend patches.
 
-This prototype is intended for:
-
-- ICPC tool demonstrations
-- Reproducible research
-- Teaching program analysis concepts
-
-It implements core ideas from:
+This prototype is intended for reproducible research. It implements core ideas from:
 
 H. Alomari et al., 2025  
 "A Slicing-Based Approach for Detecting and Patching Vulnerable Code Clones."
